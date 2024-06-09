@@ -1,0 +1,58 @@
+1)db.topics.find({ date: { $gte: new ISODate("2023-10-01"), $lt: new ISODate("2023-11-01") } })
+db.tasks.find({ date: { $gte: new ISODate("2023-10-01"), $lt: new ISODate("2023-11-01") } })
+
+2)db.company_drives.find({ date: { $gte: new ISODate("2020-10-15"), $lt: new ISODate("2020-11-01") } })
+
+3) db.company_drives.aggregate([
+    {
+        $lookup: {
+            from: "users",
+            localField: "students",
+            foreignField: "_id",
+            as: "students_details"
+        }
+    }
+])
+
+4)db.codekata.aggregate([
+    {
+        $group: {
+            _id: "$user_id",
+            total_problems_solved: { $sum: "$problems_solved" }
+        }
+    }
+])
+
+5)db.mentors.find({ "mentees.15": { $exists: true } })
+6)db.attendance.aggregate([
+    {
+        $match: {
+            date: { $gte: new ISODate("2020-10-15"), $lt: new ISODate("2020-11-01") },
+            status: "absent"
+        }
+    },
+    {
+        $lookup: {
+            from: "tasks",
+            localField: "user_id",
+            foreignField: "user_id",
+            as: "tasks"
+        }
+    },
+    {
+        $unwind: "$tasks"
+    },
+    {
+        $match: {
+            "tasks.date": { $gte: new ISODate("2020-10-15"), $lt: new ISODate("2020-11-01") },
+            "tasks.submitted": false
+        }
+    },
+    {
+        $group: {
+            _id: "$user_id",
+            count: { $sum: 1 }
+        }
+    }
+])
+
